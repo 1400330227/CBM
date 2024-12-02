@@ -3,3 +3,15 @@
 .ipynb_checkpoints/
 *pyc
 .idea/
+
+CUB_fixed/
+
+CUB_200_2011/
+CUB_processed/
+places365/
+pretrained/
+#outputs/
+
+
+#ConceptModel__Seed1/
+#ConceptModel1__PredConcepts/
