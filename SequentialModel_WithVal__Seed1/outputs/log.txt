@@ -1,0 +1,20 @@
+Namespace(dataset='cub', exp='Sequential_CtoY', seed=1, log_dir='SequentialModel_WithVal__Seed1/outputs/', batch_size=64, epochs=10, save_step=1000, lr=0.001, weight_decay=4e-05, pretrained=True, freeze=False, use_aux=True, use_attr=True, attr_loss_weight=1.0, no_img=True, bottleneck=False, weighted_loss='', uncertain_labels=False, n_attributes=112, expand_dim=0, n_class_attr=2, data_dir='ConceptModel1__PredConcepts', image_dir='images', resampling=False, end2end=False, optimizer='sgd', ckpt='', scheduler_step=1000, normalize_loss=False, use_relu=False, use_sigmoid=False, connect_CY=False, three_class=False)
+None
+train data path: ConceptModel1__PredConcepts\train.pkl
+New model best model at epoch 0
+Epoch [0]:	Train loss: 6.6413	Train accuracy: 1.5625	Val loss: 6.3669	Val acc: 0.4000	Best val epoch: 0
+New model best model at epoch 1
+Epoch [1]:	Train loss: 6.1669	Train accuracy: 1.1161	Val loss: 6.0553	Val acc: 1.2000	Best val epoch: 1
+New model best model at epoch 2
+Epoch [2]:	Train loss: 5.6756	Train accuracy: 2.6786	Val loss: 5.8633	Val acc: 1.8000	Best val epoch: 2
+Epoch [3]:	Train loss: 5.4132	Train accuracy: 5.1339	Val loss: 5.7346	Val acc: 1.6000	Best val epoch: 2
+Epoch [4]:	Train loss: 5.1687	Train accuracy: 6.0268	Val loss: 5.6413	Val acc: 1.2000	Best val epoch: 2
+Epoch [5]:	Train loss: 5.0154	Train accuracy: 5.8036	Val loss: 5.5616	Val acc: 1.8000	Best val epoch: 2
+New model best model at epoch 6
+Epoch [6]:	Train loss: 4.8594	Train accuracy: 5.8036	Val loss: 5.4915	Val acc: 2.0000	Best val epoch: 6
+New model best model at epoch 7
+Epoch [7]:	Train loss: 4.7684	Train accuracy: 5.5804	Val loss: 5.4368	Val acc: 2.6000	Best val epoch: 7
+New model best model at epoch 8
+Epoch [8]:	Train loss: 4.6515	Train accuracy: 6.4732	Val loss: 5.3983	Val acc: 3.0000	Best val epoch: 8
+New model best model at epoch 9
+Epoch [9]:	Train loss: 4.5495	Train accuracy: 8.9286	Val loss: 5.3599	Val acc: 3.2000	Best val epoch: 9
