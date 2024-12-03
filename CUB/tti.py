@@ -194,7 +194,7 @@ def parse_arguments(parser=None):
 def run(args):
     class_to_folder, attr_id_to_name = get_class_attribute_names()
 
-    data = pickle.load(open(os.path.join(args.data_dir2, 'train.pkl'), 'rb'))
+    data = pickle.load(open(os.path.join(args.data_dir, 'train.pkl'), 'rb'))
     class_attr_count = np.zeros((N_CLASSES, N_ATTRIBUTES, 2))
     for d in data:
         class_label = d['class_label']
@@ -213,7 +213,7 @@ def run(args):
     mask = np.where(attr_class_count >= 10)[0]  # select attributes that are present (on a class level) in at least [min_class_count] classes
 
     instance_attr_labels, uncertainty_attr_labels = [], []
-    test_data = pickle.load(open(os.path.join(args.data_dir2, 'test.pkl'), 'rb'))
+    test_data = pickle.load(open(os.path.join(args.data_dir, 'test.pkl'), 'rb'))
     for d in test_data:
         # if 'class_attr_data' in args.data_dir or 'end2end' in args.model_dir:
         instance_attr_labels.extend(list(np.array(d['attribute_label'])[mask]))
@@ -291,7 +291,7 @@ def run(args):
     model = torch.load(args.model_dir)
     if args.model_dir2:
         if 'rf' in args.model_dir2:
-            model2 = load(args.model_dir2)
+            model2 = torch.load(args.model_dir2)
         else:
             model2 = torch.load(args.model_dir2)
     else:  # end2end, split model into 2
@@ -345,3 +345,7 @@ if __name__ == '__main__':
     print(output_string)
     output = open(os.path.join(args.log_dir, 'results.txt'), 'w')
     output.write(output_string)
+
+
+
+'-model_dirs Joint0.01Model__Seed1/outputs/best_model_1.pth -use_attr -mode random -n_trials 5 -use_invisible -class_level -data_dir CUB_processed/class_attr_data_10 -log_dir TTI__Joint0.01Model'

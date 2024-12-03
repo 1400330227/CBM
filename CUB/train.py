@@ -5,6 +5,9 @@ import pdb
 import os
 import sys
 import argparse
+
+from tqdm import tqdm
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import math
@@ -36,7 +39,7 @@ def run_epoch_simple(model, optimizer, loader, loss_meter, acc_meter, criterion,
         inputs_var = inputs_var.cuda() if torch.cuda.is_available() else inputs_var
         labels_var = torch.autograd.Variable(labels).cuda()
         labels_var = labels_var.cuda() if torch.cuda.is_available() else labels_var
-        
+
         outputs = model(inputs_var)
         loss = criterion(outputs, labels_var)
         acc = accuracy(outputs, labels, topk=(1,))
@@ -57,8 +60,8 @@ def run_epoch(model, optimizer, loader, loss_meter, acc_meter, criterion, attr_c
         model.train()
     else:
         model.eval()
-
-    for _, data in enumerate(loader):
+    rows = tqdm(loader)
+    for _, data in enumerate(rows):
         if attr_criterion is None:
             inputs, labels = data
             attr_labels, attr_labels_var = None, None
@@ -66,7 +69,7 @@ def run_epoch(model, optimizer, loader, loss_meter, acc_meter, criterion, attr_c
             inputs, labels, attr_labels = data
             if args.n_attributes > 1:
                 attr_labels = [i.long() for i in attr_labels]
-                attr_labels = torch.stack(attr_labels).t()#.float() #N x 312
+                attr_labels = torch.stack(attr_labels).t()#.float() #N x 312   h和w转置
             else:
                 if isinstance(attr_labels, list):
                     attr_labels = attr_labels[0]
@@ -197,11 +200,11 @@ def train(model, args):
             train_loss_meter, train_acc_meter = run_epoch_simple(model, optimizer, train_loader, train_loss_meter, train_acc_meter, criterion, args, is_training=True)
         else:
             train_loss_meter, train_acc_meter = run_epoch(model, optimizer, train_loader, train_loss_meter, train_acc_meter, criterion, attr_criterion, args, is_training=True)
- 
+
         if not args.ckpt: # evaluate on val set
             val_loss_meter = AverageMeter()
             val_acc_meter = AverageMeter()
-        
+
             with torch.no_grad():
                 if args.no_img:
                     val_loss_meter, val_acc_meter = run_epoch_simple(model, optimizer, val_loader, val_loss_meter, val_acc_meter, criterion, args, is_training=False)
@@ -216,21 +219,22 @@ def train(model, args):
             best_val_epoch = epoch
             best_val_acc = val_acc_meter.avg
             logger.write('New model best model at epoch %d\n' % epoch)
-            torch.save(model, os.path.join(args.log_dir, 'best_model_%d.pth' % args.seed))
+            root = os.path.dirname(__file__)
+            torch.save(model, os.path.join(root, args.log_dir, 'best_model_%d.pth' % args.seed))
             #if best_val_acc >= 100: #in the case of retraining, stop when the model reaches 100% accuracy on both train + val sets
             #    break
 
         train_loss_avg = train_loss_meter.avg
         val_loss_avg = val_loss_meter.avg
-        
+
         logger.write('Epoch [%d]:\tTrain loss: %.4f\tTrain accuracy: %.4f\t'
                 'Val loss: %.4f\tVal acc: %.4f\t'
                 'Best val epoch: %d\n'
-                % (epoch, train_loss_avg, train_acc_meter.avg, val_loss_avg, val_acc_meter.avg, best_val_epoch)) 
+                % (epoch, train_loss_avg, train_acc_meter.avg, val_loss_avg, val_acc_meter.avg, best_val_epoch))
         logger.flush()
-        
+
         if epoch <= stop_epoch:
-            scheduler.step(epoch) #scheduler step to update lr at the end of epoch     
+            scheduler.step(epoch) #scheduler step to update lr at the end of epoch
         #inspect lr
         if epoch % 10 == 0:
             print('Current lr:', scheduler.get_lr())

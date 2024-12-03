@@ -5,11 +5,17 @@ import os
 import sys
 from os import mkdir
 
+import matplotlib.pyplot as plt
 import torch
 import joblib
 import argparse
 import numpy as np
+from PIL.Image import Image
 from sklearn.metrics import f1_score
+from torchvision.transforms.v2.functional import to_pil_image
+
+from CUB.utils import get_class_attribute_names
+
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from CUB.dataset import load_data
@@ -145,7 +151,6 @@ def eval(args):
                         attr_outputs_sigmoid = [torch.nn.Sigmoid()(o) for o in outputs[1:]]
 
                     class_outputs = outputs[0]
-
                 for i in range(args.n_attributes):
                     acc = binary_accuracy(attr_outputs_sigmoid[i].squeeze(), attr_labels[:, i])
                     acc = acc.data.cpu().numpy()
@@ -180,11 +185,26 @@ def eval(args):
     topk_class_labels = np.vstack(topk_class_labels)
     wrong_idx = np.where(np.sum(topk_class_outputs == topk_class_labels, axis=1) == 0)[0]
 
-    for j in range(len(K)):
-        print('Average top %d class accuracy: %.5f' % (K[j], class_acc_meter[j].avg))
+    class_to_folder, attr_id_to_name = get_class_attribute_names()
+
+    # img_index = topk_class_labels[0].item()
+    # img_path = class_to_folder[img_index]
+
+    # img_pil = Image.open(img_path).convert('RGB')
+    # plt.imshow(np.array(img_pil))
+    # plt.show()
+
+    for i in range(len(topk_class_outputs)):
+        class_index = topk_class_outputs[i]
+        top_c = [attr_id_to_name[c] for c in class_index]
+        print(top_c)
+
+
+    # for j in range(len(K)):
+    #     print('Average top %d class accuracy: %.5f' % (K[j], class_acc_meter[j].avg))
 
     if args.use_attr and not args.no_img:  # print some metrics for attribute prediction performance
-        print('Average attribute accuracy: %.5f' % attr_acc_meter[0].avg)
+        # print('Average attribute accuracy: %.5f' % attr_acc_meter[0].avg)
         all_attr_outputs_int = np.array(all_attr_outputs_sigmoid) >= 0.5
         if args.feature_group_results:
             n = len(all_attr_labels)
@@ -210,23 +230,25 @@ def eval(args):
                     axs[plt_id].set_title("Attribute F1 scores distribution")
             plt.savefig('/'.join(args.model_dir.split('/')[:-1]) + '.png')
             '''
+
+
             bins = np.arange(0, 1.01, 0.1)
             acc_bin_ids = np.digitize(np.array(all_attr_acc) / 100.0, bins)
             acc_counts_per_bin = [np.sum(acc_bin_ids == (i + 1)) for i in range(len(bins))]
             f1_bin_ids = np.digitize(np.array(all_attr_f1), bins)
             f1_counts_per_bin = [np.sum(f1_bin_ids == (i + 1)) for i in range(len(bins))]
-            print("Accuracy bins:")
-            print(acc_counts_per_bin)
-            print("F1 bins:")
-            print(f1_counts_per_bin)
+            # print("Accuracy bins:")
+            # print(acc_counts_per_bin)
+            # print("F1 bins:")
+            # print(f1_counts_per_bin)
             np.savetxt(os.path.join(args.log_dir, 'concepts.txt'), f1_counts_per_bin)
 
         balanced_acc, report = multiclass_metric(all_attr_outputs_int, all_attr_labels)
         f1 = f1_score(all_attr_labels, all_attr_outputs_int)
-        print("Total 1's predicted:", sum(np.array(all_attr_outputs_sigmoid) >= 0.5) / len(all_attr_outputs_sigmoid))
-        print('Avg attribute balanced acc: %.5f' % (balanced_acc))
-        print("Avg attribute F1 score: %.5f" % f1)
-        print(report + '\n')
+        # print("Total 1's predicted:", sum(np.array(all_attr_outputs_sigmoid) >= 0.5) / len(all_attr_outputs_sigmoid))
+        # print('Avg attribute balanced acc: %.5f' % (balanced_acc))
+        # print("Avg attribute F1 score: %.5f" % f1)
+        # print(report + '\n')
     return class_acc_meter, attr_acc_meter, all_class_labels, topk_class_outputs, all_class_logits, all_attr_labels, all_attr_outputs, all_attr_outputs_sigmoid, wrong_idx, all_attr_outputs2
 
 if __name__ == '__main__':
@@ -250,7 +272,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args.batch_size = 16
 
-    print(args)
+    # print(args)
     y_results, c_results = [], []
     for i, model_dir in enumerate(args.model_dirs):
         args.model_dir = model_dir
@@ -265,7 +287,7 @@ if __name__ == '__main__':
     values = (np.mean(y_results), np.std(y_results), np.mean(c_results), np.std(c_results))
     output_string = '%.4f %.4f %.4f %.4f' % values
     print_string = 'Error of y: %.4f +- %.4f, Error of C: %.4f +- %.4f' % values
-    print(print_string)
+    # print(print_string)
     if not os.path.exists(args.log_dir):
         os.makedirs(args.log_dir)
     results_path = os.path.join(args.log_dir, 'results.txt')
